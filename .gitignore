@@ -30,6 +30,7 @@
 *.patch
 *.rej
 *.diff
+.config
 
 #
 # Top-level generic files
