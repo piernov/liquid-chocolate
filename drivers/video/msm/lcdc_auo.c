@@ -578,8 +578,6 @@ static int __init lcdc_auo_init(void)
 	pinfo.lcdc.underflow_clr = 0xff;	/* blue */
 	pinfo.lcdc.hsync_skew = 0;
 	
-	pinfo.lcd.vsync_enable = FALSE;  //remove fpscap patch also for ics :)
-
 	ret = lcdc_device_register(&pinfo, &lcdc_auo_panel_data);
 	if (ret)
 		printk(KERN_ERR "%s: failed to register device!\n", __func__);
