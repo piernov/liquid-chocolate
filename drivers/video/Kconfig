@@ -2405,6 +2405,14 @@ config FB_MSM_TVOUT_NTSC
 	select FB_MSM_TVOUT
 	default n
 
+config FB_MSM_MDDI_DISABLE_MDP_HW_VSYNC
+	depends on FB_MSM
+	bool "Disable QC define"
+	select FB_MSM_MDDI
+	---help---
+	  Disables the Qualcomm define MDP_HW_VSYNC
+
+
 config FB_MSM_TVOUT_PAL
 	bool
 	select FB_MSM_TVOUT
