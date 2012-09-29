@@ -184,6 +184,7 @@ struct dev_pm_ops {
 	int (*restore_noirq)(struct device *dev);
 	int (*runtime_suspend)(struct device *dev);
 	int (*runtime_resume)(struct device *dev);
+	int (*runtime_idle)(struct device *dev);
 };
 
 /**
@@ -318,11 +319,18 @@ enum dpm_state {
 };
 
 enum rpm_status {
-         RPM_ACTIVE = 0,
-         RPM_RESUMING,
-         RPM_SUSPENDED,
-         RPM_SUSPENDING,
- };
+	RPM_ACTIVE = 0,
+	RPM_RESUMING,
+	RPM_SUSPENDED,
+	RPM_SUSPENDING,
+};
+
+enum rpm_request {
+	RPM_REQ_NONE = 0,
+	RPM_REQ_IDLE,
+	RPM_REQ_SUSPEND,
+	RPM_REQ_RESUME,
+};
 
 struct dev_pm_info {
 	pm_message_t		power_state;
@@ -331,6 +339,25 @@ struct dev_pm_info {
 	enum dpm_state		status;		/* Owned by the PM core */
 #ifdef	CONFIG_PM_SLEEP
 	struct list_head	entry;
+#endif
+#ifdef CONFIG_PM_RUNTIME
+	struct timer_list	suspend_timer;
+	unsigned long		timer_expires;
+	struct work_struct	work;
+	wait_queue_head_t	wait_queue;
+	spinlock_t		lock;
+	atomic_t		usage_count;
+	atomic_t		child_count;
+	unsigned int		disable_depth:3;
+	unsigned int		ignore_children:1;
+	unsigned int		idle_notification:1;
+	unsigned int		request_pending:1;
+	unsigned int		deferred_resume:1;
+	unsigned int		run_wake:1;
+	unsigned int		runtime_auto:1;
+	enum rpm_request	request;
+	enum rpm_status		runtime_status;
+	int			runtime_error;
 #endif
 };
 
