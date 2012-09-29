@@ -2367,6 +2367,19 @@ config FB_MSM_PANEL_NONE
 endchoice
 
 choice
+	prompt "Default framebuffer color depth"
+	depends on FB_MSM_MDP40 || FB_MSM_MDP31
+	default FB_MSM_DEFAULT_DEPTH_RGBA8888
+config FB_MSM_DEFAULT_DEPTH_RGB565
+	bool "16 bits per pixel (RGB565)"
+config FB_MSM_DEFAULT_DEPTH_ARGB8888
+	bool "32 bits per pixel (ARGB8888)"
+config FB_MSM_DEFAULT_DEPTH_RGBA8888
+	bool "32 bits per pixel (RGBA8888)"
+endchoice
+
+
+choice
 	prompt "Secondary LCD Panel"
 	depends on  FB_MSM_MDP31
 	default FB_MSM_SECONDARY_PANEL_NONE
