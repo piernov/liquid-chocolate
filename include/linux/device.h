@@ -391,6 +391,10 @@ struct device {
 					   core doesn't touch it */
 	struct dev_pm_info	power;
 
+	struct mutex            mutex;  /* mutex to synchronize calls to
+                                           * its driver.
+                                         */
+
 #ifdef CONFIG_NUMA
 	int		numa_node;	/* NUMA node this device is close to */
 #endif
@@ -467,6 +471,16 @@ static inline int device_is_registered(struct device *dev)
 {
 	return dev->kobj.state_in_sysfs;
 }
+
+static inline void device_lock(struct device *dev)
+ {
+         mutex_lock(&dev->mutex);
+ }
+
+static inline void device_unlock(struct device *dev)
+  {
+          mutex_unlock(&dev->mutex);
+  }
 
 void driver_init(void);
 
