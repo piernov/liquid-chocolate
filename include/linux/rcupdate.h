@@ -238,6 +238,13 @@ extern void wakeme_after_rcu(struct rcu_head  *head);
  * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
  * and may be nested.
  */
+
+#define rcu_dereference_raw(p)	({ \
+				typeof(p) _________p1 = ACCESS_ONCE(p); \
+				smp_read_barrier_depends(); \
+				(_________p1); \
+				})
+
 extern void call_rcu(struct rcu_head *head,
 			      void (*func)(struct rcu_head *head));
 

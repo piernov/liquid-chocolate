@@ -27,6 +27,10 @@
 #define ASHMEM_IS_UNPINNED	0
 #define ASHMEM_IS_PINNED	1
 
+int get_ashmem_file(int fd, struct file **filp, struct file **vm_file,
+                      unsigned long *len);
+void put_ashmem_file(struct file *file);
+
 struct ashmem_pin {
 	__u32 offset;	/* offset into region, in bytes, page-aligned */
 	__u32 len;	/* length forward from offset, in bytes, page-aligned */
