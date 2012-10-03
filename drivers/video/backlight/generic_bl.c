@@ -81,6 +81,7 @@ static int genericbl_probe(struct platform_device *pdev)
 	struct generic_bl_info *machinfo = pdev->dev.platform_data;
 	const char *name = "generic-bl";
 	struct backlight_device *bd;
+	 struct backlight_properties props;
 
 	bl_machinfo = machinfo;
 	if (!machinfo->limit_mask)
@@ -89,8 +90,8 @@ static int genericbl_probe(struct platform_device *pdev)
 	if (machinfo->name)
 		name = machinfo->name;
 
-	bd = backlight_device_register (name,
-		&pdev->dev, NULL, &genericbl_ops);
+	 bd = backlight_device_register(name, &pdev->dev, NULL, &genericbl_ops,
+                                         &props);
 	if (IS_ERR (bd))
 		return PTR_ERR (bd);
 

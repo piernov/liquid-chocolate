@@ -2140,8 +2140,8 @@ static int kgsl_platform_remove(struct platform_device *pdev)
 static struct platform_driver kgsl_platform_driver = {
 	.probe = kgsl_platform_probe,
 	.remove = __devexit_p(kgsl_platform_remove),
-	.suspend = kgsl_suspend,
-	.resume = kgsl_resume,
+	//.suspend = kgsl_suspend,
+	//.resume = kgsl_resume,
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = DRIVER_NAME
