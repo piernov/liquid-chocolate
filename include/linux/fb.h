@@ -538,6 +538,12 @@ struct fb_cursor_user {
 /*      Unbind from the console if possible */
 #define FB_EVENT_FB_UNBIND              0x0E
 
+#define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
+
+#define FB_EARLY_EVENT_BLANK            0x10
+ /*      A hardware display blank revert early change occured */
+#define FB_R_EARLY_EVENT_BLANK          0x11
+
 struct fb_event {
 	struct fb_info *info;
 	void *data;
