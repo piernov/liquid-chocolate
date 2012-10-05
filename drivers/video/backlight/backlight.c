@@ -227,56 +227,50 @@ static struct device_attribute bl_device_attributes[] = {
  * ERR_PTR() or a pointer to the newly allocated device.
  */
 struct backlight_device *backlight_device_register(const char *name,
-         struct device *parent, void *devdata, const struct backlight_ops *ops,
-         const struct backlight_properties *props)
- {
-         struct backlight_device *new_bd;
-         int rc;
- 
-         pr_debug("backlight_device_register: name=%s\n", name);
- 
-         new_bd = kzalloc(sizeof(struct backlight_device), GFP_KERNEL);
-         if (!new_bd)
-                 return ERR_PTR(-ENOMEM);
- 
-         mutex_init(&new_bd->update_lock);
-         mutex_init(&new_bd->ops_lock);
- 
-         new_bd->dev.class = backlight_class;
-         new_bd->dev.parent = parent;
-         new_bd->dev.release = bl_device_release;
-         dev_set_name(&new_bd->dev, name);
-         dev_set_drvdata(&new_bd->dev, devdata);
- 
-         /* Set default properties */
-         if (props)
-                 memcpy(&new_bd->props, props,
-                        sizeof(struct backlight_properties));
- 
-         rc = device_register(&new_bd->dev);
-         if (rc) {
-                 kfree(new_bd);
-                 return ERR_PTR(rc);
-         }
- 
-         rc = backlight_register_fb(new_bd);
-         if (rc) {
-                 device_unregister(&new_bd->dev);
-                 return ERR_PTR(rc);
-         }
- 
-         new_bd->ops = ops;
- 
- #ifdef CONFIG_PMAC_BACKLIGHT
-         mutex_lock(&pmac_backlight_mutex);
-         if (!pmac_backlight)
-                 pmac_backlight = new_bd;
-         mutex_unlock(&pmac_backlight_mutex);
- #endif
- 
-         return new_bd;
- }
- EXPORT_SYMBOL(backlight_device_register);
+		struct device *parent, void *devdata, struct backlight_ops *ops)
+{
+	struct backlight_device *new_bd;
+	int rc;
+
+	pr_debug("backlight_device_register: name=%s\n", name);
+
+	new_bd = kzalloc(sizeof(struct backlight_device), GFP_KERNEL);
+	if (!new_bd)
+		return ERR_PTR(-ENOMEM);
+
+	mutex_init(&new_bd->update_lock);
+	mutex_init(&new_bd->ops_lock);
+
+	new_bd->dev.class = backlight_class;
+	new_bd->dev.parent = parent;
+	new_bd->dev.release = bl_device_release;
+	dev_set_name(&new_bd->dev, name);
+	dev_set_drvdata(&new_bd->dev, devdata);
+
+	rc = device_register(&new_bd->dev);
+	if (rc) {
+		kfree(new_bd);
+		return ERR_PTR(rc);
+	}
+
+	rc = backlight_register_fb(new_bd);
+	if (rc) {
+		device_unregister(&new_bd->dev);
+		return ERR_PTR(rc);
+	}
+
+	new_bd->ops = ops;
+
+#ifdef CONFIG_PMAC_BACKLIGHT
+	mutex_lock(&pmac_backlight_mutex);
+	if (!pmac_backlight)
+		pmac_backlight = new_bd;
+	mutex_unlock(&pmac_backlight_mutex);
+#endif
+
+	return new_bd;
+}
+EXPORT_SYMBOL(backlight_device_register);
 
 /**
  * backlight_device_unregister - unregisters a backlight device object.

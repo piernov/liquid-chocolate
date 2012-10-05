@@ -16,6 +16,7 @@
 #include <linux/freezer.h>
 #include <linux/delay.h>
 #include <linux/wakelock.h>
+#include "power.h"
 
 /* 
  * Timeout for stopping processes
@@ -132,6 +133,10 @@ int freeze_processes(void)
 		goto Exit;
 	printk("done.\n");
 
+	error = suspend_sys_sync_wait();
+	if (error)
+		goto Exit;
+
 	printk("Freezing remaining freezable tasks ... ");
 	error = try_to_freeze_tasks(false);
 	if (error)
@@ -158,7 +163,7 @@ static void thaw_tasks(bool nosig_only)
 		if (nosig_only && should_send_signal(p))
 			continue;
 
-		if (cgroup_freezing_or_frozen(p))
+		if (cgroup_frozen(p))
 			continue;
 
 		thaw_process(p);

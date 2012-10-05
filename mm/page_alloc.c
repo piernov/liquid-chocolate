@@ -86,22 +86,6 @@ gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 
 static gfp_t saved_gfp_mask;
 
-void set_gfp_allowed_mask(gfp_t mask)
-{
-         WARN_ON(!mutex_is_locked(&pm_mutex));
-        gfp_allowed_mask = mask;
- 
-}
-
-gfp_t clear_gfp_allowed_mask(gfp_t mask)
- {
-         gfp_t ret = gfp_allowed_mask;
- 
-        WARN_ON(!mutex_is_locked(&pm_mutex));
-         gfp_allowed_mask &= ~mask;
-        return ret;
- }
-
 void pm_restore_gfp_mask(void)
 {
 	WARN_ON(!mutex_is_locked(&pm_mutex));

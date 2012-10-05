@@ -185,16 +185,6 @@ static inline void set_freezable_with_signal(void) {}
 #define wait_event_freezable_timeout(wq, condition, timeout)		\
 		wait_event_interruptible_timeout(wq, condition, timeout)
 
-
 #endif /* !CONFIG_FREEZER */
-
-#ifdef CONFIG_CGROUP_FREEZER
-extern int cgroup_freezing_or_frozen(struct task_struct *task);
-#else /* !CONFIG_CGROUP_FREEZER */
-static inline int cgroup_freezing_or_frozen(struct task_struct *task)
-{
-          return 0;
- }
-#endif /* !CONFIG_CGROUP_FREEZER */
 
 #endif	/* FREEZER_H_INCLUDED */
