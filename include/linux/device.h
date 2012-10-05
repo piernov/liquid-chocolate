@@ -65,7 +65,7 @@ struct bus_type {
 	int (*resume_early)(struct device *dev);
 	int (*resume)(struct device *dev);
 
-	struct dev_pm_ops *pm;
+	const struct dev_pm_ops *pm;
 
 	struct bus_type_private *p;
 };
@@ -133,7 +133,7 @@ struct device_driver {
 	int (*resume) (struct device *dev);
 	struct attribute_group **groups;
 
-	struct dev_pm_ops *pm;
+	const struct dev_pm_ops *pm;
 
 	struct driver_private *p;
 };
@@ -200,7 +200,7 @@ struct class {
 	int (*suspend)(struct device *dev, pm_message_t state);
 	int (*resume)(struct device *dev);
 
-	struct dev_pm_ops *pm;
+	const struct dev_pm_ops *pm;
 	struct class_private *p;
 };
 
@@ -293,7 +293,7 @@ struct device_type {
 	int (*suspend)(struct device *dev, pm_message_t state);
 	int (*resume)(struct device *dev);
 
-	struct dev_pm_ops *pm;
+	const struct dev_pm_ops *pm;
 };
 
 /* interface for exporting device attributes */
@@ -391,10 +391,6 @@ struct device {
 					   core doesn't touch it */
 	struct dev_pm_info	power;
 
-	struct mutex            mutex;  /* mutex to synchronize calls to
-                                           * its driver.
-                                         */
-
 #ifdef CONFIG_NUMA
 	int		numa_node;	/* NUMA node this device is close to */
 #endif
@@ -471,16 +467,6 @@ static inline int device_is_registered(struct device *dev)
 {
 	return dev->kobj.state_in_sysfs;
 }
-
-static inline void device_lock(struct device *dev)
- {
-         mutex_lock(&dev->mutex);
- }
-
-static inline void device_unlock(struct device *dev)
-  {
-          mutex_unlock(&dev->mutex);
-  }
 
 void driver_init(void);
 
