@@ -341,8 +341,10 @@ struct dev_pm_info {
 	pm_message_t		power_state;
 	unsigned		can_wakeup:1;
 	unsigned		should_wakeup:1;
-	unsigned             async_suspend:1;
+	unsigned                async_suspend:1;
 	enum dpm_state		status;		/* Owned by the PM core */
+	unsigned int		disable_depth:3;
+	enum rpm_status		runtime_status;
 #ifdef	CONFIG_PM_SLEEP
 	struct list_head	entry;
 	struct completion       completion;
@@ -355,7 +357,6 @@ struct dev_pm_info {
 	spinlock_t		lock;
 	atomic_t		usage_count;
 	atomic_t		child_count;
-	unsigned int		disable_depth:3;
 	unsigned int		ignore_children:1;
 	unsigned int		idle_notification:1;
 	unsigned int		request_pending:1;
@@ -363,7 +364,6 @@ struct dev_pm_info {
 	unsigned int		run_wake:1;
 	unsigned int		runtime_auto:1;
 	enum rpm_request	request;
-	enum rpm_status		runtime_status;
 	int			runtime_error;
 #endif
 };
