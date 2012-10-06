@@ -1941,24 +1941,12 @@ static struct resource kgsl_resources[] = {
 		.flags = IORESOURCE_IRQ,
        },
 };
-static struct kgsl_platform_data kgsl_pdata = {
-	.high_axi_3d = 160000, /* Max for 8K */
-	.max_grp2d_freq = 0,
-	.min_grp2d_freq = 0,
-	.set_grp2d_async = NULL,
-	.max_grp3d_freq = 0,
-	.min_grp3d_freq = 0,
-	.set_grp3d_async = NULL,
-};
 
 static struct platform_device msm_device_kgsl = {
        .name = "kgsl",
        .id = -1,
        .num_resources = ARRAY_SIZE(kgsl_resources),
        .resource = kgsl_resources,
-	.dev = {
-		.platform_data = &kgsl_pdata,
-	},
 };
 
 static struct platform_device msm_device_pmic_leds = {
