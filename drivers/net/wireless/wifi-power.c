@@ -82,7 +82,7 @@ static int __init_or_module wifi_power_probe(struct platform_device *pdev)
 
 	power_control = pdev->dev.platform_data;
 
-	wifi_power_state=1;
+	//wifi_power_state=1;
 	if (wifi_power_state) {
 		pr_info(
 			"%s: handling deferred power switch\n",
