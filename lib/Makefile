@@ -13,7 +13,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
 	 proportions.o prio_heap.o ratelimit.o show_mem.o is_single_threaded.o \
 	 decompress_inflate.o decompress_bunzip2.o decompress_unlzma.o \
-	 memory_alloc.o
+	 memory_alloc.o memcopy.o
 
 lib-$(CONFIG_MMU) += ioremap.o
 lib-$(CONFIG_SMP) += cpumask.o
