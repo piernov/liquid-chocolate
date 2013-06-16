@@ -938,10 +938,8 @@ static int __init msm_pm_init(void)
 	return 0;
 }
 
-void __init msm_pm_set_platform_data(
-	struct msm_pm_platform_data *data, int count)
+void __init msm_pm_set_platform_data(struct msm_pm_platform_data *data)
 {
-	BUG_ON(MSM_PM_SLEEP_MODE_NR != count);
 	msm_pm_modes = data;
 }
 

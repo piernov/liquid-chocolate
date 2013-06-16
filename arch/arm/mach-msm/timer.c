@@ -188,7 +188,7 @@ static int msm_timer_set_next_event(unsigned long cycles,
 	}
 	now = msm_read_timer_count(clock);
 	clock->last_set = now;
-	clock->alarm_vtime = round_jiffies(alarm + clock->sleep_offset);
+	clock->alarm_vtime = alarm + clock->sleep_offset;
 	late = now - alarm;
 	if (late >= (int)(-clock->write_delay << clock->shift) && late < DGT_HZ*5) {
 		static int print_limit = 10;
@@ -620,7 +620,7 @@ exit_idle_exit:
 static void msm_timer_get_sclk_time_start(
 	struct msm_timer_sync_data_t *data)
 {
-	data->timeout = 200000;
+	data->timeout = 1000000;
 }
 
 /*
@@ -629,7 +629,6 @@ static void msm_timer_get_sclk_time_start(
 static bool msm_timer_get_sclk_time_expired(
 	struct msm_timer_sync_data_t *data)
 {
-	udelay(10);
 	return --data->timeout <= 0;
 }
 

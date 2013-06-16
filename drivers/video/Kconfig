@@ -15,6 +15,8 @@ source "drivers/char/agp/Kconfig"
 
 source "drivers/gpu/drm/Kconfig"
 
+source "drivers/gpu/msm/Kconfig"
+
 config VGASTATE
        tristate
        default n
@@ -2224,6 +2226,10 @@ config FB_MSM_LCDC_HW
 	bool
 	default n
 
+config FB_MSM_TRIPLE_BUFFER
+    bool "Support for triple frame buffer"
+    default n
+
 choice
 	prompt "MDP HW version"
 	default FB_MSM_MDP22
@@ -2724,8 +2730,6 @@ config FB_BROADSHEET
 	  controller. The release name for this device was Epson S1D13521
 	  and could also have been called by other names when coupled with
 	  a bridge adapter.
-
-source "drivers/video/msm/Kconfig"
 
 source "drivers/video/backlight/Kconfig"
 source "drivers/video/display/Kconfig"

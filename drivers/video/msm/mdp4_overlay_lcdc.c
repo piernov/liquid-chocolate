@@ -1,18 +1,57 @@
 /* Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Code Aurora Forum nor
+ *       the names of its contributors may be used to endorse or promote
+ *       products derived from this software without specific prior written
+ *       permission.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Alternatively, provided that this notice is retained in full, this software
+ * may be relicensed by the recipient under the terms of the GNU General Public
+ * License version 2 ("GPL") and only version 2, in which case the provisions of
+ * the GPL apply INSTEAD OF those given above.  If the recipient relicenses the
+ * software under the GPL, then the identification text in the MODULE_LICENSE
+ * macro must be changed to reflect "GPLv2" instead of "Dual BSD/GPL".  Once a
+ * recipient changes the license terms to the GPL, subsequent recipients shall
+ * not relicense under alternate licensing terms, including the BSD or dual
+ * BSD/GPL terms.  In addition, the following license statement immediately
+ * below and between the words START and END shall also then apply when this
+ * software is relicensed under the GPL:
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
+ * START
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 and only version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ * END
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -105,24 +144,16 @@ int mdp_lcdc_on(struct platform_device *pdev)
 
 	bpp = fbi->var.bits_per_pixel / 8;
 	buf = (uint8 *) fbi->fix.smem_start;
-	buf += fbi->var.xoffset * bpp +
-		fbi->var.yoffset * fbi->fix.line_length;
+	buf += calc_fb_offset(mfd, fbi, bpp);
 
 	if (lcdc_pipe == NULL) {
 		ptype = mdp4_overlay_format2type(mfd->fb_imgType);
-		if (ptype < 0)
-			printk(KERN_INFO "%s: format2type failed\n", __func__);
-		pipe = mdp4_overlay_pipe_alloc(ptype, FALSE);
-		if (pipe == NULL)
-			printk(KERN_INFO "%s: pipe_alloc failed\n", __func__);
-		pipe->pipe_used++;
+		pipe = mdp4_overlay_pipe_alloc(ptype);
 		pipe->mixer_stage  = MDP4_MIXER_STAGE_BASE;
 		pipe->mixer_num  = MDP4_MIXER0;
 		pipe->src_format = mfd->fb_imgType;
-		mdp4_overlay_panel_mode(pipe->mixer_num, MDP4_PANEL_LCDC);
-		ret = mdp4_overlay_format2pipe(pipe);
-		if (ret < 0)
-			printk(KERN_INFO "%s: format2pipe failed\n", __func__);
+		mdp4_overlay_format2pipe(pipe);
+
 		lcdc_pipe = pipe; /* keep it */
 	} else {
 		pipe = lcdc_pipe;
@@ -159,8 +190,8 @@ int mdp_lcdc_on(struct platform_device *pdev)
 	lcdc_underflow_clr = mfd->panel_info.lcdc.underflow_clr;
 	lcdc_hsync_skew = mfd->panel_info.lcdc.hsync_skew;
 
-	lcdc_width = var->xres;
-	lcdc_height = var->yres;
+	lcdc_width = mfd->panel_info.xres;
+	lcdc_height = mfd->panel_info.yres;
 	lcdc_bpp = mfd->panel_info.bpp;
 
 	hsync_period =
@@ -225,11 +256,6 @@ int mdp_lcdc_on(struct platform_device *pdev)
 	MDP_OUTP(MDP_BASE + LCDC_BASE + 0x20, active_v_start);
 	MDP_OUTP(MDP_BASE + LCDC_BASE + 0x24, active_v_end);
 
-#ifdef CONFIG_ARCH_MSM8X60
-	mdp4_vg_qseed_init(0);
-	mdp4_vg_qseed_init(1);
-#endif
-
 	ret = panel_next_on(pdev);
 	if (ret == 0) {
 		/* enable LCDC block */
@@ -256,7 +282,7 @@ int mdp_lcdc_off(struct platform_device *pdev)
 	ret = panel_next_off(pdev);
 
 	/* delay to make sure the last frame finishes */
-	msleep(16);
+	mdelay(100);
 
 #ifdef LCDC_RGB_UNSTAGE
 	/* dis-engage rgb0 from mixer0 */
@@ -265,35 +291,6 @@ int mdp_lcdc_off(struct platform_device *pdev)
 #endif
 
 	return ret;
-}
-
-int mdp4_lcdc_overlay_blt_offset(int *off)
-{
-	if (lcdc_pipe->blt_addr == 0) {
-		*off = -1;
-		return -EINVAL;
-	}
-
-	*off = 0;
-	return 0;
-}
-
-void mdp4_lcdc_overlay_blt(ulong addr)
-{
-	unsigned long flag;
-
-	spin_lock_irqsave(&mdp_spin_lock, flag);
-	lcdc_pipe->blt_addr = addr;
-	lcdc_pipe->blt_cnt = 0;
-	spin_unlock_irqrestore(&mdp_spin_lock, flag);
-
-	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
-	MDP_OUTP(MDP_BASE + LCDC_BASE, 0);	/* stop lcdc */
-	msleep(50);
-	mdp4_overlayproc_cfg(lcdc_pipe);
-	mdp4_overlay_dmap_xy(lcdc_pipe);
-	MDP_OUTP(MDP_BASE + LCDC_BASE, 1);	/* start lcdc */
-	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 }
 
 /*
@@ -318,8 +315,7 @@ void mdp4_lcdc_overlay(struct msm_fb_data_type *mfd)
 	/* no need to power on cmd block since it's lcdc mode */
 	bpp = fbi->var.bits_per_pixel / 8;
 	buf = (uint8 *) fbi->fix.smem_start;
-	buf += fbi->var.xoffset * bpp +
-		fbi->var.yoffset * fbi->fix.line_length;
+	buf += calc_fb_offset(mfd, fbi, bpp);
 
 	mutex_lock(&mfd->dma->ov_mutex);
 
@@ -339,8 +335,6 @@ void mdp4_lcdc_overlay(struct msm_fb_data_type *mfd)
 	spin_unlock_irqrestore(&mdp_spin_lock, flag);
 	wait_for_completion_killable(&lcdc_pipe->comp);
 	mdp_disable_irq(MDP_OVERLAY0_TERM);
-
-	mdp4_stat.kickoff_lcdc++;
 
 	mutex_unlock(&mfd->dma->ov_mutex);
 }
