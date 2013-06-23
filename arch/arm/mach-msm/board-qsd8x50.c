@@ -137,9 +137,15 @@
 #define MSM_SMI_BASE		0x00000000
 #endif
 
+#define MODEM_SIZE		0x02B00000
+
 #define MSM_SHARED_RAM_PHYS	0x00100000
 
-#define MSM_PMEM_SMI_BASE	0x02B00000
+
+#define MSM_RAM_CONSOLE_BASE	(MSM_SMI_BASE + MODEM_SIZE)
+#define MSM_RAM_CONSOLE_SIZE	128 * SZ_1K
+
+#define MSM_PMEM_SMI_BASE	(MSM_SMI_BASE + MODEM_SIZE + MSM_RAM_CONSOLE_SIZE)
 #define MSM_PMEM_SMI_SIZE	0x01500000
 
 #define MSM_FB_BASE		MSM_PMEM_SMI_BASE
@@ -2441,9 +2447,25 @@ static struct msm_otg_platform_data msm_otg_pdata = {
 	.pmic_enable_ldo         = msm_pm_app_enable_usb_ldo,
 };
 
+static struct resource ram_console_resource[] = {
+	{
+		.flags  = IORESOURCE_MEM,
+		.start  = MSM_RAM_CONSOLE_BASE,
+		.end	= MSM_RAM_CONSOLE_BASE + MSM_RAM_CONSOLE_SIZE - 1,
+	}
+};
+
+static struct platform_device ram_console_device = {
+	.name = "ram_console",
+	.id = -1,
+	.num_resources  = ARRAY_SIZE(ram_console_resource),
+	.resource       = ram_console_resource,
+};
+
 static struct msm_hsusb_gadget_platform_data msm_gadget_pdata;
 
 static struct platform_device *devices[] __initdata = {
+	&ram_console_device,
 	&msm_fb_device,
 #ifdef CONFIG_FB_MSM_MDDI_TOSHIBA_WVGA
 	&mddi_toshiba_device,
